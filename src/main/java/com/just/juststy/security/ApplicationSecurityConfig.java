@@ -29,9 +29,14 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
+//                .antMatchers(HttpMethod.DELETE, "/management/api/**").hasAuthority(STUDENT_WRITE.getPermission())
+//                .antMatchers(HttpMethod.POST, "/management/api/**").hasAuthority(STUDENT_WRITE.getPermission())
+//                .antMatchers(HttpMethod.PUT, "/management/api/**").hasAuthority(STUDENT_WRITE.getPermission())
+//                .antMatchers(HttpMethod.GET, "/management/api/**").hasAnyRole(ADMIN.name(), ADMINTRAINEE.name())
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -43,18 +48,27 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     protected UserDetailsService userDetailsService() {
         UserDetails std1 = User.builder()
-                .username("student1")
+                .username("xasan")
                 .password(passwordEncoder.encode("pass"))
-                .roles(STUDENT.name())
+//                    .roles(STUDENT.name()) // ROLE_STUDENT
+                .authorities(STUDENT.getGrantedAuthorities())
                 .build();
 
         UserDetails std2 = User.builder()
-                .username("student2")
+                .username("xusan")
                 .password(passwordEncoder.encode("pass012"))
-                .roles(ADMIN.name())
+                //                .roles(ADMIN.name()) // ROLE_ADMIN
+                .authorities(ADMIN.getGrantedAuthorities())
                 .build();
 
-        return new InMemoryUserDetailsManager(std1, std2);
+        UserDetails std3 = User.builder()
+                .username("tom")
+                .password(passwordEncoder.encode("pass012"))
+//                    .roles(ADMINTRAINEE.name()) // ROLE_ADMINTRAINEE
+                .authorities(ADMINTRAINEE.getGrantedAuthorities())
+                .build();
+
+        return new InMemoryUserDetailsManager(std1, std2, std3);
     }
 
 }
