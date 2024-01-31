@@ -3,6 +3,7 @@ package com.just.juststy.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -12,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import static com.just.juststy.entity.ApplicationUserPermission.*;
 import static com.just.juststy.entity.ApplicationUserRole.*;
 
 @Configuration
@@ -33,10 +35,10 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
-//                .antMatchers(HttpMethod.DELETE, "/management/api/**").hasAuthority(STUDENT_WRITE.getPermission())
-//                .antMatchers(HttpMethod.POST, "/management/api/**").hasAuthority(STUDENT_WRITE.getPermission())
-//                .antMatchers(HttpMethod.PUT, "/management/api/**").hasAuthority(STUDENT_WRITE.getPermission())
-//                .antMatchers(HttpMethod.GET, "/management/api/**").hasAnyRole(ADMIN.name(), ADMINTRAINEE.name())
+                .antMatchers(HttpMethod.DELETE, "/management/api/**").hasAuthority(STUDENT_WRITE.getPermission())
+                .antMatchers(HttpMethod.POST, "/management/api/**").hasAuthority(STUDENT_WRITE.getPermission())
+                .antMatchers(HttpMethod.PUT, "/management/api/**").hasAuthority(STUDENT_WRITE.getPermission())
+                .antMatchers(HttpMethod.GET, "/management/api/**").hasAnyRole(ADMIN.name(), ADMINTRAINEE.name())
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -50,25 +52,26 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         UserDetails std1 = User.builder()
                 .username("xasan")
                 .password(passwordEncoder.encode("pass"))
-//                    .roles(STUDENT.name()) // ROLE_STUDENT
-                .authorities(STUDENT.getGrantedAuthorities())
+                    .roles(STUDENT.name()) // ROLE_STUDENT
                 .build();
 
         UserDetails std2 = User.builder()
                 .username("xusan")
                 .password(passwordEncoder.encode("pass012"))
-                //                .roles(ADMIN.name()) // ROLE_ADMIN
-                .authorities(ADMIN.getGrantedAuthorities())
+                                .roles(ADMIN.name()) // ROLE_ADMIN
                 .build();
 
         UserDetails std3 = User.builder()
                 .username("tom")
                 .password(passwordEncoder.encode("pass012"))
-//                    .roles(ADMINTRAINEE.name()) // ROLE_ADMINTRAINEE
-                .authorities(ADMINTRAINEE.getGrantedAuthorities())
+                    .roles(ADMINTRAINEE.name()) // ROLE_ADMINTRAINEE
                 .build();
 
-        return new InMemoryUserDetailsManager(std1, std2, std3);
+        InMemoryUserDetailsManager inMemoryUserDetailsManager = new InMemoryUserDetailsManager();
+        inMemoryUserDetailsManager.createUser(std1);
+        inMemoryUserDetailsManager.createUser(std2);
+        inMemoryUserDetailsManager.createUser(std3);
+        return inMemoryUserDetailsManager;
     }
 
 }
